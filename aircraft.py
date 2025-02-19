@@ -1,3 +1,5 @@
+import string
+
 class Aircraft:
     def __init__(self, registration, model, num_rows, num_seats_per_row):
         self.__registration = registration
@@ -19,25 +21,9 @@ class Aircraft:
         """
         
         rows = [None]*(self.__num_rows + 1) # None for each cell of the array
-        seats = "ABCDEF"[:self.__num_seats_per_row]
+        seats = string.ascii_uppercase[:self.__num_seats_per_row] # I cut the string to the length of the number of seats per row
         
         return rows, seats
-        
-        # this is the first solution I got
-
-        #rows = list(range(0, self.__num_rows + 1)) # Here I use the list method to to create a list of numbers from 1 to num_rows
-        # for index in len(rows):
-        #     rows[index] = None # Here I iterate over the list and set each element to None
-        # seats = "ABCDEF"[:self.__num_seats_per_row]  
-
-        # this is how I wanted to do it
-
-        # rows = [None, self.__num_rows + 1]
-        # seats = "ABCDEF"
-        # if self.__num_seats_per_row < len(seats):
-        #     for i in range(len(seats)-self.__num_seats_per_row):
-        #         seats.pop()
-        # return rows, seats
 
     def num_seats(self):
         """Calculates the number of seats
@@ -50,8 +36,14 @@ class Airbus(Aircraft):
     def __init__(self, registration, variant):
         self.__variant = variant
         super().__init__(registration, "Airbus A319", 23, 6)
+
+    def get_variant(self):
+        return self.__variant
         
 class Boeing(Aircraft):
     def __init__(self, registration, airline):
         self.__airline = airline
         super().__init__(registration, "Boeing 777", 56, 9)
+    
+    def get_airline(self):
+        return self.__airline
