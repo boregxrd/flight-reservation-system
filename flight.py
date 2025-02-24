@@ -1,34 +1,67 @@
+"""
+This module defines the Flight class for managing flight reservations.
+
+Classes:
+    Flight: Represents a flight, including seating arrangements and boarding passes.
+"""
+
 from aircraft import Aircraft
 
 class Flight:
     def __init__(self, number, aircraft):
+        """Initializes a Flight instance with the given flight number and aircraft.
+        
+        Args:
+            number (str): The flight number.
+            aircraft (Aircraft): An instance of an Aircraft.
+        """
         self.__number = number
-        self.__aircraft = Aircraft(aircraft.get_registration(), aircraft.get_model(), aircraft.get_num_rows(), aircraft.get_num_seats_per_row())
+        self.__aircraft = Aircraft(
+            aircraft.get_registration(),
+            aircraft.get_model(),
+            aircraft.get_num_rows(),
+            aircraft.get_num_seats_per_row()
+        )
         
         rows, seats = self.__aircraft.seating_plan()
-        # I use in range here because I want the row 0 to be None
+        # Row 0 is intentionally left as None so that the row number matches its index.
         for row_number in range(1, len(rows)):
             rows[row_number] = {letter: None for letter in seats}
         self.__seating = rows
     
     def get_number(self):
+        """Gets the flight number.
+        
+        Returns:
+            str: The flight number.
+        """
         return self.__number
     
     def get_aircraft_model(self):
+        """Gets the model of the aircraft used in the flight.
+        
+        Returns:
+            str: The aircraft model.
+        """
         return self.__aircraft.get_model()
     
     def get_seating(self):
+        """Gets the seating plan of the flight.
+        
+        Returns:
+            list: The seating plan represented as a list where index 0 is None and each subsequent element is a dict mapping seat letters to passenger data.
+        """
         return self.__seating
     
-    # receives a passenger dupla and a string called seat with the structure "12C"
     def allocate_passenger(self, seat, passenger):
-        """Allocate a seat to a passenger
+        """Allocates a seat to a passenger.
+        
         Args:
-        seat: A seat designator such as '12C' or '21F'
-        passenger: The passenger data such as ('Jack', 'Shephard', '85994003S')
+            seat (str): A seat designator such as '12C' or '21F'.
+            passenger (tuple): The passenger data (e.g., ('Jack', 'Shephard', '85994003S')).
         """
         if self.num_available_seats() == 0:
-            print ("No available seats")
+            print("No available seats")
             return
 
         row, letter = self.__parse_seat(seat)
@@ -40,10 +73,11 @@ class Flight:
         self.__seating[row][letter] = passenger
         
     def reallocate_passenger(self, from_seat, to_seat):
-        """Reallocate a passenger to a different seat
+        """Reallocates a passenger from one seat to another.
+        
         Args:
-        from_seat: The existing seat designator for the passenger such as '12C'
-        to_seat: The new seat designator
+            from_seat (str): The current seat designator for the passenger (e.g., '12C').
+            to_seat (str): The new seat designator.
         """
         from_row, from_letter = self.__parse_seat(from_seat)
         to_row, to_letter = self.__parse_seat(to_seat)
@@ -56,30 +90,31 @@ class Flight:
             print(f"Wanted seat {to_seat} is already occupied")
             return
         
-        # get the passenger, reallocate it and delete it from the initial seat
-        passenger = self.__seating[from_seat][from_letter]
+        # Get the passenger, reallocate it, and remove it from the original seat.
+        passenger = self.__seating[from_row][from_letter]
         self.__seating[to_row][to_letter] = passenger
         self.__seating[from_row][from_letter] = None
 
     def num_available_seats(self):
-        """Obtains the amount of unoccupied seats
+        """Calculates the number of available (unoccupied) seats.
+        
         Returns:
-        The number of unoccupied seats  
+            int: The number of unoccupied seats.
         """
         available_seats = 0
         for row in self.__seating:
-            if row is None:  # Skip rows that are None (like the 0th row)
+            if row is None:  # Skip rows that are None (like row 0).
                 continue
-            for letter in row:  # Directly iterate over the keys in the dictionary
+            for letter in row:  # Iterate over the seat letters in the row.
                 if row[letter] is None:
                     available_seats += 1
         return available_seats
 
-    
     def print_seating(self):
-        """Prints in console the seating plan
-        Example of one row:
-            {'A': None, 'B': None, 'C': None, 'D': None, 'E': None, 'F': None}
+        """Prints the seating plan to the console.
+        
+        Example:
+            Row 1 {'A': None, 'B': None, 'C': None, 'D': None, 'E': None, 'F': None}
         """
         i = 0
         for row in self.__seating:
@@ -87,41 +122,32 @@ class Flight:
             i += 1
 
     def print_boarding_cards(self):
-        """Prints in console the boarding card for each passenger
-        Example of one boarding card:
-        ----------------------------------------------------------
-        |     Jack Sheppard 85994003S 15E BA758 Airbus A319      |
-        ----------------------------------------------------------
+        """Prints the boarding cards for each passenger to the console.
+        
+        Each boarding card includes the passenger's name, surname, ID, seat, flight number, and aircraft model.
         """
-        # enumerate returns the index and the value of the index
-        for row_number, row in enumerate(self.__seating):
-            if row is None:
-                continue
-            #for letter in row:
-                #passenger = row[letter]
-            for letter, passenger in row.items():
-                if passenger is not None:
-                    name, surname, id_card = passenger
-                    seat = f"{row_number}{letter}"
-                    flight_number = self.__number
-                    aircraft_model = self.__aircraft.get_model()
-                    print(f"----------------------------------------------------------")
-                    print(f"|     {name} {surname} {id_card} {seat} {flight_number} {aircraft_model}      |")
-                    print(f"----------------------------------------------------------")
+        for passenger, seat in self.__passenger_seats():
+            name, surname, id_card = passenger
+            flight_number = self.__number
+            aircraft_model = self.__aircraft.get_model()
+            print("----------------------------------------------------------")
+            print(f"|     {name} {surname} {id_card} {seat} {flight_number} {aircraft_model}      |")
+            print("----------------------------------------------------------")
+
 
     def __parse_seat(self, seat):
-        """Divide a seat designator in row and letter
+        """Parses a seat designator into a row number and a seat letter.
+        
         Args:
-        seat: The seat designator to be divided such as '12C'
+            seat (str): The seat designator (e.g., '12C').
+        
         Returns:
-        row: The row of the seat such as 12
-        letter: The letter of the seat such as 'C'
+            tuple: A tuple containing the row number (int) and the seat letter (str).
         """
         letter = seat[-1]
         row = int(seat[:-1])
 
-        # I want to make here a validation that letter is in fact a letter
-        # and doesnt have numbers
+        # Validate that the seat letter is alphabetical.
         if not letter.isalpha():
             print(f"Invalid seat letter {letter}")
             return
@@ -130,21 +156,22 @@ class Flight:
             print(f"Invalid row number {row}")
             return
 
-        # ord function returns the unicode of the letter on the ascii table
-        # and %32 divides the number by 32 and returns the remainder
-        if self.__aircraft.get_num_seats_per_row() < ord(letter)%32:
+        if self.__aircraft.get_num_seats_per_row() < ord(letter) % 32:
             print(f"Invalid seat letter {letter}")
             return
 
         return row, letter
 
     def __passenger_seats(self):
-        """A generator function to iterate the occupied seating locations
-        Returns:
-        generator: Tuple of the passenger data and the seat
+        """Generator that yields tuples of passenger data and their seat designator.
+
+        Yields:
+            tuple: A tuple containing the passenger data and the seat designator as a string.
         """
-        for row in self.__seating:
-                for letter, passenger in row.items():
-                    if passenger is not None:
-                        yield passenger, f"{row}{letter}" # creates a string with the row and the letter
-                    
+        for row_number, row in enumerate(self.__seating):
+            if row is None:
+                continue
+            for letter, passenger in row.items():
+                if passenger is not None:
+                    yield passenger, f"{row_number}{letter}"
+
