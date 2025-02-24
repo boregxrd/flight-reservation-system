@@ -13,6 +13,12 @@ class Aircraft:
     def get_model(self):
         return self.__model
     
+    def get_num_rows(self):
+        return self.__num_rows
+    
+    def get_num_seats_per_row(self):
+        return self.__num_seats_per_row
+    
     def seating_plan(self):
         """Generates a seating plan for the number of rows and seats per row
         Returns:

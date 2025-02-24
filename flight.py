@@ -3,7 +3,7 @@ from aircraft import Aircraft
 class Flight:
     def __init__(self, number, aircraft):
         self.__number = number
-        self.__aircraft = Aircraft(aircraft.registration, aircraft.model, aircraft.num_rows, aircraft.num_seats_per_row)
+        self.__aircraft = Aircraft(aircraft.get_registration(), aircraft.get_model(), aircraft.get_num_rows(), aircraft.get_num_seats_per_row())
         
         rows, seats = self.__aircraft.seating_plan()
         # I use in range here because I want the row 0 to be None
@@ -68,6 +68,8 @@ class Flight:
         """
         available_seats = 0
         for row in self.__seating:
+            if row is None:  # Evita filas que sean None
+                continue
             for letter in self.__seating[row]: # accessing correctly to the dictionary
                 if self.__seating[row][letter] is None:
                     # I don't use count here because its a dictionary not a list
