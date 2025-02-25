@@ -19,6 +19,20 @@ class Aircraft:
             num_rows (int): The number of rows in the aircraft.
             num_seats_per_row (int): The number of seats per row.
         """
+
+        try:
+            self.__verify_registration(registration)
+        except ValueError as e:
+            print(e)
+            raise
+
+        if not isinstance(num_rows, int) or not isinstance(num_seats_per_row, int):
+            raise ValueError("Number of rows and seats per row must be integers.")
+        if num_rows <= 0 or num_seats_per_row <= 0:
+            raise ValueError("Number of rows and seats per row must be positive integers.")
+        if not isinstance(model, str):
+            raise ValueError("Model must be a string.")
+        
         self.__registration = registration
         self.__model = model
         self.__num_rows = num_rows
@@ -75,7 +89,31 @@ class Aircraft:
             int: The total number of seats.
         """
         return self.__num_rows * self.__num_seats_per_row
-
+    
+    def __verify_registration(self, registration):
+        """Verifies that the registration number is valid. Returns false if
+        the regirstration number is not a string, if it doesn't start with an
+        uppercase letter, if the second digit is not a hyphen, if the rest of
+        characters aren't letters or numbers, if the registration number is not
+        six characters long.
+        
+        Args:
+            registration (str): The registration number of the aircraft.
+        
+        Raises:
+            ValueError: If the registration number is not nine characters long or if it doesn't end with a letter.
+        """
+        if not isinstance(registration, str):
+            raise ValueError("Registration must be a string.")
+        if not registration[:1].isupper():
+            raise ValueError("Registration must start with an uppercase letter.")
+        if not registration[1:2] == "-":
+            raise ValueError("Registration must have a hyphen as the second character.")
+        if not registration[2:].isalnum():
+            raise ValueError("Registration must have letters or numbers after the hyphen.")
+        if len(registration) != 6:
+            raise ValueError("Registration must be six characters long.")
+        
 class Airbus(Aircraft):
     def __init__(self, registration, variant):
         """Initializes an Airbus instance.
@@ -84,6 +122,9 @@ class Airbus(Aircraft):
             registration (str): The registration number of the Airbus.
             variant (str): The variant of the Airbus.
         """
+        if not isinstance(variant, str):
+            raise ValueError("Variant must be a string.")
+        
         self.__variant = variant
         super().__init__(registration, "Airbus A319", 23, 6)
 
@@ -103,6 +144,9 @@ class Boeing(Aircraft):
             registration (str): The registration number of the Boeing.
             airline (str): The airline operating the Boeing.
         """
+        if not isinstance(airline, str):
+            raise ValueError("Airline must be a string.")
+        
         self.__airline = airline
         super().__init__(registration, "Boeing 777", 56, 9)
     
@@ -113,3 +157,4 @@ class Boeing(Aircraft):
             str: The airline.
         """
         return self.__airline
+    

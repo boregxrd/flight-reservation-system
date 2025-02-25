@@ -15,6 +15,13 @@ class Flight:
             number (str): The flight number.
             aircraft (Aircraft): An instance of an Aircraft.
         """
+        try:
+            self.__verify_flight_number(number)
+        except ValueError as e:
+            print(e)
+            # If you want to propagate the error, use:
+            raise
+    
         self.__number = number
         self.__aircraft = Aircraft(
             aircraft.get_registration(),
@@ -60,16 +67,15 @@ class Flight:
             seat (str): A seat designator such as '12C' or '21F'.
             passenger (tuple): The passenger data (e.g., ('Jack', 'Shephard', '85994003S')).
         """
+
         if self.num_available_seats() == 0:
-            print("No available seats")
-            return
+            raise ValueError("No available seats")
 
         row, letter = self.__parse_seat(seat)
-      
+
         if self.__seating[row][letter] is not None:
-            print(f"Seat {seat} is already occupied")
-            return
-        
+            raise ValueError(f"Seat {seat} is already occupied")
+
         self.__seating[row][letter] = passenger
         
     def reallocate_passenger(self, from_seat, to_seat):
@@ -83,12 +89,10 @@ class Flight:
         to_row, to_letter = self.__parse_seat(to_seat)
         
         if self.__seating[from_row][from_letter] is None:
-            print(f"Initial seat {from_seat} is not occupied")
-            return
+            raise ValueError(f"Initial seat {from_seat} is not occupied")
         
         if self.__seating[to_row][to_letter] is not None:
-            print(f"Wanted seat {to_seat} is already occupied")
-            return
+            raise ValueError(f"Wanted seat {to_seat} is already occupied")
         
         # Get the passenger, reallocate it, and remove it from the original seat.
         passenger = self.__seating[from_row][from_letter]
@@ -145,21 +149,17 @@ class Flight:
             tuple: A tuple containing the row number (int) and the seat letter (str).
         """
         letter = seat[-1]
-        row = int(seat[:-1])
+        row_str = seat[:-1]  # Keep it as string for validation
+        try:
+            # Validate before converting to int
+            self.__verify_seat(row_str, letter)
+        except ValueError as e:
+            print(e)
+            # If you want to propagate the error, use:
+            raise
 
-        # Validate that the seat letter is alphabetical.
-        if not letter.isalpha():
-            print(f"Invalid seat letter {letter}")
-            return
-
-        if row < 1 or row > self.__aircraft.get_num_rows():
-            print(f"Invalid row number {row}")
-            return
-
-        if self.__aircraft.get_num_seats_per_row() < ord(letter) % 32:
-            print(f"Invalid seat letter {letter}")
-            return
-
+        # Now convert row_str to int after verification
+        row = int(row_str)
         return row, letter
 
     def __passenger_seats(self):
@@ -174,4 +174,55 @@ class Flight:
             for letter, passenger in row.items():
                 if passenger is not None:
                     yield passenger, f"{row_number}{letter}"
+    
+    def __verify_flight_number(self, number):
+        """Verifies that the flight number is valid. Returns false if 
+        the first two characters of the number aren't letters, if the the 
+        first two characters are lowercased, if the rest are numbers and if
+        they are numbers that they are less than 9999.
+        
+        Args:
+            number (str): The flight number.
+        
+        Returns:
+            bool: True if the flight number is valid; False otherwise.
+        """
+        if not number[:2].isalpha():
+            raise ValueError(f"Invalid flight number {number}. The first two characters must be letters.")
+        if not number[:2].isupper():
+            raise ValueError(f"Invalid flight number {number}. The first two characters must be uppercase.")
+        if not number[2:].isdigit():
+            raise ValueError(f"Invalid flight number {number}. The last characters must be numbers.")
+        if int(number[2:]) > 9999:
+            raise ValueError(f"Invalid flight number {number}. The last characters must be less than 9999.")
+        return True
+    
+    def __verify_seat(self, row_str, letter):
+        """Verifies that the seat is valid. Returns false if the row is 
+        less than 1 or greater than the number of rows, if the seat letter 
+        is not alphabetical, if the seat letter is greater than the number
+        of seats per row and if the row characters are numbers.
+        
+        Args:
+            row (int): The row number.
+            letter (str): The seat letter.
+        
+        Returns:
+            bool: True if the seat is valid; False otherwise.
+        """
+        if not row_str.isdigit():
+            raise ValueError(f"Invalid row number {row_str}. The row number must be a number.")
+        if not letter.isalpha():
+            raise ValueError(f"Invalid seat letter {letter}. The seat letter must be alphabetical.")
 
+        row = int(row_str)
+        if row < 1 or row > self.__aircraft.get_num_rows():
+            raise ValueError(f"Invalid row number {row}. The row number must be between 1 and {self.__aircraft.get_num_rows()}.")
+        
+        # Convert letter to a numerical index, e.g., 'A' -> 1, 'B' -> 2, etc.
+        seat_index = ord(letter.upper()) - ord('A') + 1
+        if seat_index > self.__aircraft.get_num_seats_per_row():
+            raise ValueError(f"Invalid seat letter {letter}. The seat letter must be between 'A' and {chr(ord('A') + self.__aircraft.get_num_seats_per_row() - 1)}.")
+        
+        return True
+        
