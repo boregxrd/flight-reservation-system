@@ -1,11 +1,13 @@
 """
+Author: Manuel Borregales
+
 This module defines the Flight class for managing flight reservations.
 
 Classes:
     Flight: Represents a flight, including seating arrangements and boarding passes.
 """
 
-from aircraft import Aircraft
+from src.aircraft import Aircraft
 
 class Flight:
     def __init__(self, number, aircraft):

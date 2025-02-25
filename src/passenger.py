@@ -1,4 +1,6 @@
 """
+Author: Manuel Borregales
+
 This module defines the Passenger class for representing a passenger.
 
 Classes:

@@ -6,9 +6,9 @@ focusing on both normal operation and edge cases.
 """
 
 import pytest
-from flight import Flight
-from aircraft import Aircraft, Boeing, Airbus
-from passenger import Passenger
+from src.flight import Flight
+from src.aircraft import Aircraft, Boeing, Airbus
+from src.passenger import Passenger
 
 
 # Fixtures for reusable test objects

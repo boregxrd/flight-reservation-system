@@ -1,4 +1,6 @@
 """
+Author: Manuel Borregales
+
 This module defines the Aircraft class and its subclasses for different aircraft types.
 
 Classes:
